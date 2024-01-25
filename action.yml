@@ -66,7 +66,6 @@ runs:
     OPENAPI_SERVICE_SPEC: https://bit.ly/github_compare
     OPENAPI_SERVICE_TOKEN: ${{ inputs.github_token }}
     SERVICE_RESPONSE_SUBTREE: files
-    OUTPUT_FILE: GITHUB_OUTPUT
     OUTPUT_KEY: text_generation
     OUTPUT_SCHEMA: https://bit.ly/reno_release_note_fc_schema
     NOTE_TEMPLATE: https://bit.ly/reno_release_note_template
