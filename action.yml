@@ -42,9 +42,9 @@ inputs:
     default: auto-reno-bot
 
 outputs:
-  note-name:
+  file_name:
     description: The name of the release note file (without hash or yaml extension)
-  note-text:
+  note:
     description: The text of the release note
 
   
