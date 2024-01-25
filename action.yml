@@ -1,0 +1,72 @@
+name: auto-reno
+description: Automatically generate reno release notes
+author: Vladimir Blagojevic
+branding:
+  icon: edit-2
+  color: blue
+inputs:
+  openai_api_key:
+    description: OpenAI API key
+    required: true
+  openai_base_url:
+    description: OpenAI Base URL
+    required: false
+    default: https://api.openai.com/v1
+  github_token:
+    description: GITHUB_TOKEN or a repo scoped PAT
+    default: ${{ github.token }}
+  github_repository:
+    description: GitHub repository
+    default: ${{ github.repository }}
+  base_branch:
+    description: Base branch (e.g. main master)
+    default: ${{ github.event.pull_request.base.ref }}
+  head_branch:
+    description: PR Head branch (code branch being merged into a base branch)
+    default: ${{ github.event.pull_request.head.ref }}
+  generation_model:
+    description: LLM to use for text generation
+    default: gpt-4-1106-preview
+  function_calling_model:
+    description: LLM to use for function calling (service parameter resolution, output formatting)
+    default: gpt-3.5-turbo-0613
+  system_prompt:
+    description: System message/prompt to help the model generate reno release note (prompt text or URL where prompt text can be found)
+    default: https://bit.ly/reno_release_note_system_prompt
+    required: false
+  user_prompt:
+    description: Additional prompt to help the model generate reno release note
+    required: false
+  bot_name:
+    description: The name of the bot so users can guide reno release note generation with @bot_name from PR comments
+    default: auto-reno-bot
+
+outputs:
+  note-name:
+    description: The name of the release note file (without hash or yaml extension)
+  note-text:
+    description: The text of the release note
+
+  
+runs:
+  using: 'docker'
+  image: 'docker://vblagoje/openapi-rag-service:latest'
+  env:
+    OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+    OPENAI_BASE_URL: ${{ inputs.openai_base_url }}
+    GITHUB_REPOSITORY: ${{ inputs.github_repository }}
+    BASE_REF: ${{ inputs.base_branch }}
+    HEAD_REF: ${{ inputs.head_branch }}
+    TEXT_GENERATION_MODEL: ${{ inputs.generation_model }}
+    FUNCTION_CALLING_MODEL: ${{ inputs.function_calling_model }}
+    SYSTEM_PROMPT: ${{ inputs.system_prompt }}
+    USER_PROMPT: ${{ inputs.user_prompt }}
+    FUNCTION_CALLING_PROMPT: Compare branches ${{ inputs.base_branch }} and ${{ inputs.head_branch }}, in GitHub repository ${{ inputs.github_repository }}
+    BOT_NAME: ${{ inputs.bot_name }}
+    OPENAPI_SERVICE_SPEC: https://bit.ly/github_compare
+    OPENAPI_SERVICE_TOKEN: ${{ inputs.github_token }}
+    SERVICE_RESPONSE_SUBTREE: files
+    OUTPUT_FILE: GITHUB_OUTPUT
+    OUTPUT_KEY: text_generation
+    OUTPUT_SCHEMA: https://bit.ly/reno_release_note_fc_schema
+    NOTE_TEMPLATE: https://bit.ly/reno_release_note_template
