@@ -25,7 +25,7 @@ inputs:
     description: PR Head branch (code branch being merged into a base branch)
     default: ${{ github.event.pull_request.head.ref }}
   generation_model:
-    description: LLM to use for text generation
+    description: LLM to use for reno release note text generation
     default: gpt-4-turbo-preview
   function_calling_model:
     description: LLM to use for function calling (service parameter resolution, output formatting)
