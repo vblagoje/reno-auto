@@ -32,7 +32,7 @@ inputs:
     default: gpt-3.5-turbo-0613
   system_prompt:
     description: System message/prompt to help the model generate reno release note (prompt text or URL where prompt text can be found)
-    default: https://bit.ly/reno_release_note_system_prompt_v2
+    default: https://bit.ly/reno_release_note_system_prompt_v3
     required: false
   user_prompt:
     description: Additional prompt to help the model generate reno release note
@@ -62,6 +62,7 @@ runs:
     SYSTEM_PROMPT: ${{ inputs.system_prompt }}
     USER_PROMPT: ${{ inputs.user_prompt }}
     FUNCTION_CALLING_PROMPT: Compare branches ${{ inputs.base_branch }} (BASE) and ${{ inputs.head_branch }} (HEAD), in GitHub repository ${{ inputs.github_repository }} (owner/repo)
+    FUNCTION_CALLING_VALIDATION_SCHEMA: https://bit.ly/compare_branches_function_params_schema
     BOT_NAME: ${{ inputs.bot_name }}
     OPENAPI_SERVICE_SPEC: https://bit.ly/github_compare
     OPENAPI_SERVICE_TOKEN: ${{ inputs.github_token }}
