@@ -8,8 +8,9 @@ Automatically generate comprehensive Reno release notes for your PR requests
 ## Description
 Auto Reno is a GitHub Action designed to automatically generate [reno](https://docs.openstack.org/reno/latest/) release notes using Large Language Models (LLMs). By default, it utilizes OpenAI's models, but it also supports integration with a variety of other LLM providers such as fireworks.ai, together.xyz, anyscale, octoai, etc., allowing users to select their preferred provider and LLMs to best suit their needs. This action can be customized with system and user-provided prompts to tailor the release note generation.
 
-
 Auto Reno, in conjunction with the accompanying GitHub Actions, [create-or-update-release-note](https://github.com/vblagoje/create-or-update-release-note) and [find-pr-release-note](https://github.com/vblagoje/find-pr-release-note), enables the creation of a fully automated workflow for generating and updating release notes.
+
+![Auto Reno  Demo](https://raw.githubusercontent.com/vblagoje/various/main/auto-reno-medium.gif)
 
 
 ## Usage
@@ -94,7 +95,7 @@ To confirm the correct operation of the Docker image, perform a smoke test local
    Run the following command in your terminal, replacing `<YOUR_OPENAI_API_KEY>` with your actual API key and `<YOUR_GITHUB_TOKEN>` with your actual GitHub token:
 
    ```bash
-   docker run -e <YOUR_OPENAI_API_KEY> -e OPENAPI_SERVICE_TOKEN=<YOUR_GITHUB_TOKEN> -e SYSTEM_PROMPT=https://bit.ly/reno_release_note_system_prompt_v2 -e OPENAPI_SERVICE_SPEC=https://bit.ly/github_compare -e FUNCTION_CALLING_PROMPT="Compare branches main (BASE) and test/benchmarks2.0 (HEAD), in Github repository deepset-ai/haystack (owner/repo)" -e OUTPUT_SCHEMA=https://bit.ly/reno_release_note_fc_schema_v2 -e NOTE_TEMPLATE=https://bit.ly/reno_release_note_template -e SERVICE_RESPONSE_SUBTREE=files vblagoje/openapi-rag-service
+   docker run -e <YOUR_OPENAI_API_KEY> -e OPENAPI_SERVICE_TOKEN=<YOUR_GITHUB_TOKEN> -e SYSTEM_PROMPT=https://bit.ly/reno_release_note_system_prompt_v3 -e OPENAPI_SERVICE_SPEC=https://bit.ly/github_compare -e FUNCTION_CALLING_PROMPT="Compare branches main (BASE) and test/benchmarks2.0 (HEAD), in Github repository deepset-ai/haystack (owner/repo)" -e FUNCTION_CALLING_VALIDATION_SCHEMA=https://bit.ly/compare_branches_function_params_schema -e OUTPUT_SCHEMA=https://bit.ly/reno_release_note_fc_schema_v2 -e NOTE_TEMPLATE=https://bit.ly/reno_release_note_template -e SERVICE_RESPONSE_SUBTREE=files vblagoje/openapi-rag-service
    ```
 
    Modify the parameters `deepset-ai/haystack main test/benchmarks2.0` according to the specific repository main and pr branches, relevant to your use case.
