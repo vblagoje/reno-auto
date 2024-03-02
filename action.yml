@@ -1,4 +1,4 @@
-name: auto-reno
+name: reno-auto
 description: Automatically generate reno release notes
 author: Vladimir Blagojevic
 branding:
@@ -39,7 +39,7 @@ inputs:
     required: false
   bot_name:
     description: The name of the bot so users can guide reno release note generation with @bot_name from PR comments
-    default: auto-reno-bot
+    default: reno-auto-bot
 
 outputs:
   file-name:
