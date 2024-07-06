@@ -70,9 +70,9 @@ jobs:
 
 - `head_branch` **Optional** The head (source) branch in the pull request. Defaults to the head branch of the current PR.
 
-- `generation_model` **Optional** LLM to use for reno release note text generation. Defaults to gpt-4-turbo-preview from OpenAI.
+- `generation_model` **Optional** LLM to use for reno release note text generation. Defaults to gpt-4o from OpenAI.
 
-- `function_calling_model` **Optional** LLM to use for function calling (service parameter resolution, output formatting etc). Defaults to gpt-3.5-turbo-0613 from OpenAI.
+- `function_calling_model` **Optional** LLM to use for function calling (service parameter resolution, output formatting etc). Defaults to gpt-3.5-turbo from OpenAI.
 
 - `system_prompt` **Optional** System message/prompt to help the model generate reno release note (prompt text or URL where prompt text can be found). Defaults to https://bit.ly/reno_release_note_system_prompt_v2
 
