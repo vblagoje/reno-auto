@@ -5,11 +5,9 @@ Automatically generate comprehensive Reno release notes for your PR requests
 ![Docker Pulls](https://img.shields.io/docker/pulls/vblagoje/openapi-rag-service)
 
 ## Description
-Reno Auto is a GitHub Action designed to generate [reno](https://docs.openstack.org/reno/latest/) release notes using Large Language Models (LLMs) automatically. By default, it utilizes OpenAI's models, but it also supports integration with a variety of other LLM providers such as fireworks.ai, together.xyz, anyscale, octoai, etc., allowing users to select their preferred provider and LLMs to best suit their needs. This action can be customized with system and user-provided prompts to tailor the release note generation.
+Reno Auto is a GitHub Action designed to generate [reno](https://docs.openstack.org/reno/latest/) release notes using Large Language Models (LLMs) automatically. By default, it utilizes OpenAI's models, but it also supports integration with a variety of other LLM providers such as fireworks.ai, together.xyz, anyscale, octoai, etc., allowing users to select their preferred provider and LLMs to best suit their needs.
 
-Reno Auto, in conjunction with the accompanying GitHub Actions, [create-or-update-release-note](https://github.com/vblagoje/create-or-update-release-note) and [find-pr-release-note](https://github.com/vblagoje/find-pr-release-note), enables the creation of a fully automated workflow for generating and updating release notes.
-
-![Auto Reno  Demo](https://raw.githubusercontent.com/vblagoje/various/main/auto-reno-medium.gif)
+![Auto Reno  Demo](https://raw.githubusercontent.com/vblagoje/various/main/new_reno.gif)
 
 
 ## Usage
@@ -20,39 +18,55 @@ The minimum requirements to use this action with its default settings are:
 - Add a workflow to your repository to trigger this action when a new PR is opened. See the example below.
 - (Optional) Use the [example pull request template in your repository to create an initial PR description](https://github.com/vblagoje/pr-auto/blob/main/.github/pull_request_template.md)
 
-## Minimal Example Workflow
+## Recommended Usage Example and Safety Explanation
 
 Here's a minimal example of how to use the Reno Auto in a pull request workflow:
 
 ```yaml
-name: Pull Request Reno note Generator Workflow
+name: Pull Request Reno Note Generator Workflow
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened]
-  
+
 jobs:
   create-pr-release-note:
     runs-on: ubuntu-latest
     steps:
-
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
-
       - name: Generate Release Note for this PR
         uses: vblagoje/reno-auto@v1
-        id: reno-auto-id
+        id: reno-auto-step
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
 
-      - name: Create PR release note
-        uses: vblagoje/create-or-update-release-note@v1
+      - name: Create PR comment
+        uses: peter-evans/create-or-update-comment@v4
         with:
-          note-name: ${{steps.reno-auto-id.outputs.file-name}}
-          note-content: ${{steps.reno-auto-id.outputs.note}}
+          issue-number: ${{github.event.pull_request.number}}
+          body: |
+            We use reno release [notes](https://docs.openstack.org/reno/latest/) to describe the code changes in this PR. Follow these steps:
+
+            1. Install reno via `pip install reno` (only once per virtual environment)
+            2. Run this command in your terminal from the project root:
+            ```
+            reno new ${{steps.reno-auto-step.outputs.file-name}}
+            ```
+            3. This command will generate a new release note file in the `releasenotes/notes` directory.
+               Paste the following release note text into that file:
+            ```
+            ${{steps.reno-auto-step.outputs.note}}
+            ```
+            4. Review the release note text, adjust if needed, and save the file.
+            5. Add this file to your commit and push it to the branch.
 ```
+This usage is recommended because it addresses the security concerns in the following ways:
+
+1. No code checkout: The workflow doesn't use actions/checkout, so it never checks out any code from forks. This eliminates the risk of running untrusted code.
+2. Limited scope: The vblagoje/reno-auto@v1 action only generates release notes based on the pull request metadata. It doesn't interact with the actual code in the PR.
+3. Secure comment creation: The peter-evans/create-or-update-comment@v4 action is a well-known and trusted action that only creates or updates a comment on the PR. It doesn't modify any repository files or execute any untrusted code.
+4. No cache usage: This workflow doesn't interact with or modify any caches, avoiding the risk of cache poisoning.
+
+By following this example, you can safely generate and provide release note suggestions for pull requests, including those from forks, without exposing your repository to the security risks associated with executing untrusted code or granting unnecessary permissions.
 
 
 ## Inputs
@@ -76,9 +90,13 @@ jobs:
 
 - `system_prompt` **Optional** System message/prompt to help the model generate reno release note (prompt text or URL where prompt text can be found). Defaults to https://bit.ly/reno_release_note_system_prompt_v2
 
-- `user_prompt` **Optional** Additional user prompt to help the model generate reno release note
+## Important Security Consideration
 
-- `bot_name` **Optional** The name of the bot so users can guide reno release note generation with @bot_name from PR comments. Defaults to reno-auto-bot
+Using reno-auto in conjunction with fetching code from untrusted PR forks (via actions/checkout) poses a significant security risk, especially when used with the `pull_request_target` event. 
+For example, another Github Action [create-or-update-release-note](https://github.com/vblagoje/create-or-update-release-note) can create a release note commit directly in the PR branch. However, it needs to check out the code from the fork, which can have significant security risks. Use this approach for trusted PRs only (e.g., PRs from your own repository).
+For more detailed information on these security considerations, refer to:
+- [GitHub Actions documentation on pull_request_target](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request_target)
+- [GitHub Security Lab article: "Keeping your GitHub Actions and workflows secure: Preventing pwn requests"](https://securitylab.github.com/research/github-actions-preventing-pwn-requests/)
 
 
 ## Contributing
@@ -87,26 +105,6 @@ If you have ideas for enhancing Reno Auto, or if you encounter a bug, we encoura
 The core of this GitHub Action is built on top of Docker image of the [vblagoje/openapi-rag-service](https://github.com/vblagoje/openapi-rag-service/) project. 
 Therefore, for contributions beyond minor edits to the `action.yml` or `README.md`, please direct your pull requests to 
 the [vblagoje/openapi-rag-service](https://github.com/vblagoje/openapi-rag-service/) GitHub repository.
-
-## Smoke Test for Docker Image
-
-To confirm the correct operation of the Docker image, perform a smoke test locally using the following steps:
-
-1. **Prepare Your OpenAI API Key**: Ensure your OpenAI API key is ready for use.
-
-2. **Execute the Image**:
-   Run the following command in your terminal, replacing `<YOUR_OPENAI_API_KEY>` with your actual API key and `<YOUR_GITHUB_TOKEN>` with your actual GitHub token:
-
-   ```bash
-   docker run -e <YOUR_OPENAI_API_KEY> -e OPENAPI_SERVICE_TOKEN=<YOUR_GITHUB_TOKEN> -e SYSTEM_PROMPT=https://bit.ly/reno_release_note_system_prompt_v3 -e OPENAPI_SERVICE_SPEC=https://bit.ly/github_compare -e FUNCTION_CALLING_PROMPT="Compare branches main (BASE) and test/benchmarks2.0 (HEAD), in Github repository deepset-ai/haystack (owner/repo)" -e FUNCTION_CALLING_VALIDATION_SCHEMA=https://bit.ly/compare_branches_function_params_schema -e OUTPUT_SCHEMA=https://bit.ly/reno_release_note_fc_schema_v2 -e NOTE_TEMPLATE=https://bit.ly/reno_release_note_template -e SERVICE_RESPONSE_SUBTREE=files vblagoje/openapi-rag-service
-   ```
-
-   Modify the parameters `deepset-ai/haystack main test/benchmarks2.0` according to the specific repository main and pr branches, relevant to your use case.
-
-3. **Check the Output**: After execution, verify the output to ensure release note looks as expected.
-
-This test will help you verify the basic functionality of the Docker image. Remember to adjust the command with the appropriate 
-project, repository, and branches you wish to compare etc.
 
 
 ## License
