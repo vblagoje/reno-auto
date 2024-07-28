@@ -18,9 +18,13 @@ The minimum requirements to use this action with its default settings are:
 - Add a workflow to your repository to trigger this action when a new PR is opened. See the example below.
 - (Optional) Use the [example pull request template in your repository to create an initial PR description](https://github.com/vblagoje/pr-auto/blob/main/.github/pull_request_template.md)
 
-## Recommended Usage Example and Safety Explanation
+## Usage Scenarios
 
-Here's a minimal example of how to use the Reno Auto in a pull request workflow:
+Reno-auto can be used in two distinct scenarios, each with its own security implications and use cases:
+
+### 1. Secure Usage with Forks (Recommended for public repositories)
+
+This approach uses the `pull_request_target` event and is completely secure, allowing forks to make PRs.
 
 ```yaml
 name: Pull Request Reno Note Generator Workflow
@@ -59,15 +63,66 @@ jobs:
             4. Review the release note text, adjust if needed, and save the file.
             5. Add this file to your commit and push it to the branch.
 ```
-This usage is recommended because it addresses the security concerns in the following ways:
+Pros:
 
-1. No code checkout: The workflow doesn't use actions/checkout, so it never checks out any code from forks. This eliminates the risk of running untrusted code.
-2. Limited scope: The vblagoje/reno-auto@v1 action only generates release notes based on the pull request metadata. It doesn't interact with the actual code in the PR.
-3. Secure comment creation: The peter-evans/create-or-update-comment@v4 action is a well-known and trusted action that only creates or updates a comment on the PR. It doesn't modify any repository files or execute any untrusted code.
-4. No cache usage: This workflow doesn't interact with or modify any caches, avoiding the risk of cache poisoning.
+- Completely secure, even for PRs from forks
+- No risk of exposing secrets or running malicious code
+- Suitable for public repositories with many contributors
 
-By following this example, you can safely generate and provide release note suggestions for pull requests, including those from forks, without exposing your repository to the security risks associated with executing untrusted code or granting unnecessary permissions.
+Cons:
 
+- Doesn't automatically commit the release note to the PR
+- Requires manual action from the PR author to add the release note
+
+### 2. Trusted Setting with Fork Approval (For controlled environments)
+
+This approach uses the pull_request event and is suitable for environments where PRs from forks need approval.
+
+```yaml
+name: Create Reno release note and commit it
+on:
+  pull_request:
+    types: [opened]
+jobs:
+  create-pr-release-note:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository (even forks) to add reno note commit to it
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+      - name: Generate Release Note for this PR
+        uses: vblagoje/reno-auto@v1
+        id: reno-auto-step
+        with:
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+      - name: Create PR release note and commit it to the branch
+        uses: vblagoje/create-or-update-release-note@v2
+        with:
+          note-name: ${{steps.reno-auto-step.outputs.file-name}}
+          note-content: ${{steps.reno-auto-step.outputs.note}}
+```
+
+Pros:
+
+- Automatically commits the release note to the PR branch
+- Streamlined process for contributors
+- Suitable for repositories with trusted contributors or internal teams
+
+Cons:
+
+- Potential security risk if used with untrusted forks
+- Requires careful management of PR approvals and permissions
+- Not recommended for public repositories with unknown contributors
+
+### Choosing the Right Approach
+
+For public repositories or projects with many unknown contributors, use the secure approach with pull_request_target.
+For private repositories, internal projects, or situations where all contributors are trusted, the second approach with pull_request can be more convenient.
+
+Always consider your project's specific needs and security requirements when choosing between these approaches.
 
 ## Inputs
 
