@@ -74,6 +74,10 @@ Cons:
 - Doesn't automatically commit the release note to the PR
 - Requires manual action from the PR author to add the release note
 
+Here is an example PR that uses this approach:
+
+- https://github.com/vblagoje/workflow-playground/pull/185
+
 ### 2. Trusted Setting with Fork Approval (For controlled environments)
 
 This approach uses the pull_request event and is suitable for environments where PRs from forks need approval.
@@ -116,6 +120,11 @@ Cons:
 - Potential security risk if used with untrusted forks
 - Requires careful management of PR approvals and permissions
 - Not recommended for public repositories with unknown contributors
+
+Here is an example PR that uses this approach:
+
+- https://github.com/vblagoje/workflow-playground/pull/166
+
 
 ### Choosing the Right Approach
 
