@@ -26,10 +26,10 @@ inputs:
     default: ${{ github.event.pull_request.head.ref }}
   generation_model:
     description: LLM to use for reno release note text generation
-    default: gpt-4o
+    default: gpt-4o-mini
   function_calling_model:
     description: LLM to use for function calling (service parameter resolution, output formatting)
-    default: gpt-3.5-turbo
+    default: gpt-4o-mini
   system_prompt:
     description: System message/prompt to help the model generate reno release note (prompt text or URL where prompt text can be found)
     default: https://bit.ly/reno_release_note_system_prompt_v5
@@ -61,7 +61,7 @@ runs:
     FUNCTION_CALLING_MODEL: ${{ inputs.function_calling_model }}
     SYSTEM_PROMPT: ${{ inputs.system_prompt }}
     USER_PROMPT: ${{ inputs.user_prompt }}
-    FUNCTION_CALLING_PROMPT: Compare branches ${{ inputs.base_branch }} (BASE) and ${{ inputs.head_branch }} (HEAD), in GitHub repository ${{ inputs.github_repository }} (owner/repo)
+    FUNCTION_CALLING_PROMPT: "Compare branches in a GitHub repository using the correct base...head syntax: (1) If the branches come from different repositories (forks), include the full repository name for each branch (e.g., deepset-ai:main...kaqmak:fix/component_type). (2) If the branches come from the same repository, use only the branch names (e.g., main...fix/error_msg_on_invalid_type). Your task: Compare branches ${{ inputs.base_branch }} (BASE) and ${{ inputs.head_branch }} (HEAD), in GitHub repository ${{ inputs.github_repository }} (owner/repo)."
     FUNCTION_CALLING_VALIDATION_SCHEMA: https://bit.ly/github_compare_branches_full_schema
     BOT_NAME: ${{ inputs.bot_name }}
     OPENAPI_SERVICE_SPEC: https://bit.ly/github_compare
